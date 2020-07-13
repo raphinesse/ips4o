@@ -101,7 +101,6 @@ class Sorter<Cfg>::Classifier {
         const int log_buckets = log_buckets_;
         const bucket_type num_buckets = num_buckets_;
         IPS4OML_ASSUME_NOT(log_buckets < 1);
-        IPS4OML_ASSUME_NOT(log_buckets > 9);
 
         bucket_type b = 1;
         for (int l = 0; l < log_buckets; ++l)
