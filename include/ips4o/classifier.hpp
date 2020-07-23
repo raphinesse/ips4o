@@ -38,7 +38,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "ips4o_fwd.hpp"
 #include "utils.hpp"
 
 namespace ips4o {
@@ -48,7 +47,7 @@ namespace detail {
  * Branch-free classifier.
  */
 template <class Cfg>
-class Sorter<Cfg>::Classifier {
+class Classifier {
     using value_type = typename Cfg::value_type;
     using bucket_type = typename Cfg::bucket_type;
     using less = typename Cfg::less;
