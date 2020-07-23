@@ -49,7 +49,6 @@ namespace detail {
  */
 template <class Cfg>
 class Sorter<Cfg>::Classifier {
-    using iterator = typename Cfg::iterator;
     using value_type = typename Cfg::value_type;
     using bucket_type = typename Cfg::bucket_type;
     using less = typename Cfg::less;
@@ -113,8 +112,8 @@ class Sorter<Cfg>::Classifier {
     /**
      * Classifies all elements using a callback.
      */
-    template <bool kEqualBuckets, class Yield>
-    void classify(iterator begin, iterator end, Yield&& yield) const {
+    template <bool kEqualBuckets, class Iterator, class Yield>
+    void classify(Iterator begin, Iterator end, Yield&& yield) const {
         switch (log_buckets_) {
             case 1: classifyUnrolled<kEqualBuckets, 1>(begin, end, std::forward<Yield>(yield)); break;
             case 2: classifyUnrolled<kEqualBuckets, 2>(begin, end, std::forward<Yield>(yield)); break;
@@ -131,8 +130,8 @@ class Sorter<Cfg>::Classifier {
     /**
      * Classifies all elements using a callback.
      */
-    template <bool kEqualBuckets, int kLogBuckets, class Yield>
-    void classifyUnrolled(iterator begin, const iterator end, Yield&& yield) const {
+    template <bool kEqualBuckets, int kLogBuckets, class Iterator, class Yield>
+    void classifyUnrolled(Iterator begin, const Iterator end, Yield&& yield) const {
         constexpr const bucket_type kNumBuckets = 1l << (kLogBuckets + kEqualBuckets);
         constexpr const int kUnroll = Cfg::kUnrollClassifier;
         IPS4OML_ASSUME_NOT(begin >= end);
