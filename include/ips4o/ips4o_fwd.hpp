@@ -61,6 +61,8 @@ inline void selectSample(It begin, It end,
                          typename std::iterator_traits<It>::difference_type num_samples,
                          RandomGen&& gen);
 
+template <class Cfg> class Classifier;
+
 template <class Cfg>
 class Sorter {
  public:
@@ -73,7 +75,6 @@ class Sorter {
     class Block;
     class Buffers;
     class BucketPointers;
-    class Classifier;
     struct LocalData;
     struct SharedData;
     explicit Sorter(LocalData& local) : local_(local) {}
@@ -104,6 +105,8 @@ class Sorter {
 #endif
 
  private:
+    using Classifier = ::ips4o::detail::Classifier<Cfg>;
+
     LocalData& local_;
     SharedData* shared_;
     Classifier* classifier_;
