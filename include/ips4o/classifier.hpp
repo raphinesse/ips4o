@@ -49,7 +49,6 @@ namespace detail {
  */
 template <class Cfg>
 class Sorter<Cfg>::Classifier {
-    using iterator = typename Cfg::iterator;
     using value_type = typename Cfg::value_type;
     using bucket_type = typename Cfg::bucket_type;
     using less = typename Cfg::less;
@@ -114,17 +113,17 @@ class Sorter<Cfg>::Classifier {
     /**
      * Classifies all elements using a callback.
      */
-    template <bool kEqualBuckets, class Yield> 
-    void classify(iterator begin, iterator end, Yield&& yield) const {
-      classifySwitch<kEqualBuckets>(begin, end, std::forward<Yield>(yield),
-	std::make_integer_sequence<int, Cfg::kLogBuckets + 1>{});
+    template <bool kEqualBuckets, class Iterator, class Yield>
+    void classify(Iterator begin, Iterator end, Yield&& yield) const {
+        classifySwitch<kEqualBuckets>(begin, end, std::forward<Yield>(yield),
+            std::make_integer_sequence<int, Cfg::kLogBuckets + 1>{});
     }
 
     /**
      * Classifies all elements using a callback.
      */
-  template <bool kEqualBuckets, class Yield, int...Args>
-  void classifySwitch(iterator begin, iterator end, Yield&& yield,
+  template <bool kEqualBuckets, class Iterator, class Yield, int...Args>
+  void classifySwitch(Iterator begin, Iterator end, Yield&& yield,
 		      std::integer_sequence<int, Args...>) const {
     IPS4OML_ASSUME_NOT(log_buckets_ <= 0 && log_buckets_ >= static_cast<int>(sizeof...(Args)));
     ((Args == log_buckets_ &&
@@ -135,8 +134,8 @@ class Sorter<Cfg>::Classifier {
     /**
      * Classifies all elements using a callback.
      */
-    template <bool kEqualBuckets, int kLogBuckets, class Yield>
-    bool classifyUnrolled(iterator begin, const iterator end, Yield&& yield) const {
+    template <bool kEqualBuckets, int kLogBuckets, class Iterator, class Yield>
+    bool classifyUnrolled(Iterator begin, const Iterator end, Yield&& yield) const {
 
         constexpr const bucket_type kNumBuckets = 1l << (kLogBuckets + kEqualBuckets);
         constexpr const int kUnroll = Cfg::kUnrollClassifier;
