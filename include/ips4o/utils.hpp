@@ -37,7 +37,12 @@
 
 #include "cassert"
 
+#ifdef NDEBUG
 #define IPS4OML_ASSUME_NOT(c) if (c) __builtin_unreachable()
+#else
+#define IPS4OML_ASSUME_NOT(c) assert(!(c))
+#endif
+
 #define IPS4OML_IS_NOT(c) assert(!(c))
 
 #include <limits>
