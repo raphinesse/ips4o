@@ -122,6 +122,8 @@ class Classifier {
             case 6: classifyUnrolled<kEqualBuckets, 6>(begin, end, std::forward<Yield>(yield)); break;
             case 7: classifyUnrolled<kEqualBuckets, 7>(begin, end, std::forward<Yield>(yield)); break;
             case 8: classifyUnrolled<kEqualBuckets, 8>(begin, end, std::forward<Yield>(yield)); break;
+            case 9: classifyUnrolled<kEqualBuckets, 9>(begin, end, std::forward<Yield>(yield)); break;
+            case 10: classifyUnrolled<kEqualBuckets, 10>(begin, end, std::forward<Yield>(yield)); break;
             default: IPS4OML_ASSUME_NOT(true);
         }
     }
