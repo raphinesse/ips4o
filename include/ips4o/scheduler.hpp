@@ -42,7 +42,9 @@
 #include <numeric>
 #include <vector>
 
+#if defined(_REENTRANT)
 #include <tbb/concurrent_queue.h>
+#endif  // _REENTRANT
 
 namespace ips4o {
 namespace detail {
@@ -112,6 +114,7 @@ class PrivateQueue {
     size_t m_off;
 };
 
+#if defined(_REENTRANT)
 template <class Job>
 class Scheduler {
  public:
@@ -165,6 +168,14 @@ class Scheduler {
     std::atomic_uint64_t m_num_idle_threads;
     const size_t m_num_threads;
 };
+#else
+template <class>
+class Scheduler {
+public:
+    Scheduler(size_t) {}
+    void reset() {}
+};
+#endif  // _REENTRANT
 
 }  // namespace detail
 }  // namespace ips4o
