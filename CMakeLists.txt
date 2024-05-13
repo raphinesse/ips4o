@@ -43,7 +43,6 @@ if (NOT IPS4O_DISABLE_PARALLEL)
   find_package (Threads REQUIRED)
   target_link_libraries(ips4o INTERFACE Threads::Threads)
 
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/extern/cmake-modules)
   find_package(TBB REQUIRED)
   target_link_libraries(ips4o INTERFACE TBB::tbb)
 
