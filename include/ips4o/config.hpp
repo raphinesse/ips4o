@@ -42,10 +42,6 @@
 #include <type_traits>
 #include <utility>
 
-#if defined(_REENTRANT)
-#include "thread_pool.hpp"
-#endif
-
 #include "utils.hpp"
 
 #ifndef IPS4OML_ALLOW_EQUAL_BUCKETS
@@ -191,22 +187,12 @@ struct Config {
      * Returns the number of threads that should be used for the given input range.
      */
     template <class It>
-#if defined(_REENTRANT)
-    static constexpr int numThreadsFor(const It& begin, const It& end, int max_threads) {
-        const std::ptrdiff_t blocks =
-                (end - begin) * sizeof(decltype(*begin)) / kBlockSizeInBytes;
-        return (blocks < (kMinParallelBlocksPerThread * max_threads)) ? 1 : max_threads;
-#else
     static constexpr int numThreadsFor(const It&, const It&, int) {
         return 1;
-#endif
     }
 };
 
 template <class It_, class Comp_, class Cfg = Config<>
-#if defined(_REENTRANT)
-          , class ThreadPool_ = DefaultThreadPool
-#endif
         >
 struct ExtendedConfig : public Cfg {
     /**
@@ -229,22 +215,6 @@ struct ExtendedConfig : public Cfg {
      * The comparison operator.
      */
     using less = Comp_;
-
-#if defined(_REENTRANT)
-
-    /**
-     * Thread pool for parallel algorithm.
-     */
-    using ThreadPool = ThreadPool_;
-
-    using SubThreadPool = ThreadJoiningThreadPool;
-
-    /**
-     * Synchronization support for parallel algorithm.
-     */
-    using Sync = decltype(std::declval<ThreadPool&>().sync());
-
-#else
 
     struct Sync {
         constexpr void barrier() const {}
@@ -273,8 +243,6 @@ struct ExtendedConfig : public Cfg {
      private:
         Sync sync_;
     };
-
-#endif
 
     /**
      * Maximum number of buckets (including equality buckets).

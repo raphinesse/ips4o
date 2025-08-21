@@ -85,25 +85,6 @@ class Sorter {
 
     void sequential_rec(iterator begin, iterator end);
 
-#if defined(_REENTRANT)
-    void parallelSortPrimary(iterator begin, iterator end, int num_threads,
-                             BufferStorage& buffer_storage,
-                             std::vector<std::shared_ptr<SubThreadPool>>& tp_trash);
-
-    void parallelSortSecondary(iterator begin, iterator end, int id, int num_threads,
-                               BufferStorage& buffer_storage,
-                               std::vector<std::shared_ptr<SubThreadPool>>& tp_trash);
-
-    std::pair<std::vector<diff_t>, bool> parallelPartitionPrimary(iterator begin,
-                                                                  iterator end,
-                                                                  int num_threads);
-
-    void parallelPartitionSecondary(iterator begin, iterator end, int id,
-                                    int num_threads);
-
-    void setShared(SharedData* shared_);
-#endif
-
  private:
     using Classifier = ::ips4o::detail::Classifier<Cfg>;
 
@@ -146,10 +127,6 @@ class Sorter {
     template <bool kEqualBuckets, bool kIsParallel>
     void permuteBlocks();
 
-#ifdef _REENTRANT
-    inline std::pair<int, diff_t> saveMargins(int last_bucket);
-#endif // _REENTRANT
-
     template <bool kIsParallel>
     void writeMargins(int first_bucket, int last_bucket, int overflow_bucket,
                       int swap_bucket, diff_t in_swap_buffer);
@@ -185,15 +162,4 @@ inline void sort(It begin, It end, Comp comp);
 template <class It>
 inline void sort(It begin, It end);
 
-#if defined(_REENTRANT)
-namespace parallel {
-
-template <class It, class Comp>
-inline void sort(It begin, It end, Comp comp);
-
-template <class It>
-inline void sort(It begin, It end);
-
-}  // namespace parallel
-#endif  // _REENTRANT
 }  // namespace ips4o

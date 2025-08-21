@@ -42,10 +42,6 @@
 #include <numeric>
 #include <vector>
 
-#ifdef _REENTRANT
-#include <tbb/concurrent_queue.h>
-#endif // _REENTRANT
-
 namespace ips4o {
 namespace detail {
 
@@ -114,61 +110,5 @@ class PrivateQueue {
     size_t m_off;
 };
 
-#ifdef _REENTRANT
-
-template <class Job>
-class Scheduler {
- public:
-    Scheduler(size_t num_threads) : m_num_idle_threads(0), m_num_threads(num_threads) {}
-
-    bool getJob(PrivateQueue<Job>& my_queue, Job& j) {
-        // Jobry to get local job.
-        if (!my_queue.empty()) {
-            j = my_queue.popBack();
-            return true;
-        }
-
-        // Try to get global job.
-        const bool succ = m_glob_queue.try_pop(j);
-        if (succ) return succ;
-
-        // Signal idle.
-        m_num_idle_threads.fetch_add(1, std::memory_order_relaxed);
-
-        while (m_num_idle_threads.load(std::memory_order_relaxed) != m_num_threads) {
-            if (!m_glob_queue.empty()) {
-                m_num_idle_threads.fetch_sub(1, std::memory_order_relaxed);
-
-                const bool succ = m_glob_queue.try_pop(j);
-                if (succ) {
-                    return succ;
-                }
-
-                m_num_idle_threads.fetch_add(1, std::memory_order_relaxed);
-            }
-        }
-
-        return false;
-    }
-
-    void offerJob(PrivateQueue<Job>& my_queue) {
-        if (my_queue.size() > 1 && m_num_idle_threads.load(std::memory_order_relaxed) > 0
-            && m_glob_queue.empty()) {
-            addJob(my_queue.popFront());
-        }
-    }
-
-    void addJob(const Job& j) { m_glob_queue.push(j); }
-
-    void addJob(const Job&& j) { m_glob_queue.push(j); }
-
-    void reset() { m_num_idle_threads.store(0, std::memory_order_relaxed); }
-
- protected:
-    tbb::concurrent_queue<Job> m_glob_queue;
-    std::atomic_uint64_t m_num_idle_threads;
-    const size_t m_num_threads;
-};
-#endif // _REENTRANT
 }  // namespace detail
 }  // namespace ips4o

@@ -45,10 +45,6 @@
 #include <utility>
 #include <vector>
 
-#ifdef _REENTRANT
-#include <tbb/concurrent_queue.h>
-#endif // _REENTRANT
-
 #include "ips4o_fwd.hpp"
 #include "bucket_pointers.hpp"
 #include "buffers.hpp"
@@ -226,60 +222,6 @@ struct BigTask {
     // Indicates whether this is a task or not
     bool has_task;
 };
-
-#ifdef _REENTRANT
-/**
- * Data shared between all threads.
- */
-template <class Cfg>
-struct Sorter<Cfg>::SharedData {
-    // Bucket information
-    typename Cfg::difference_type bucket_start[Cfg::kMaxBuckets + 1];
-    BucketPointers bucket_pointers[Cfg::kMaxBuckets];
-    Block* overflow;
-    int num_buckets;
-    bool use_equal_buckets;
-
-    // Classifier for parallel partitioning
-    Classifier classifier;
-
-    // Synchronisation support
-    typename Cfg::Sync sync;
-
-    // Local thread data
-    std::vector<LocalData*> local;
-
-    // Thread pools for bigtasks. One entry for each thread.
-    std::vector<std::shared_ptr<SubThreadPool>> thread_pools;
-
-    // Bigtasks. One entry per thread.
-    std::vector<BigTask> big_tasks;
-
-    // Scheduler of small tasks.
-    Scheduler<Task> scheduler;
-
-    SharedData(typename Cfg::less comp, typename Cfg::Sync sync, int num_threads)
-        : classifier(std::move(comp))
-        , sync(std::forward<typename Cfg::Sync>(sync))
-        , local(num_threads)
-        , thread_pools(num_threads)
-        , big_tasks(num_threads)
-        , scheduler(num_threads)
-    {
-        reset();
-    }
-
-    /**
-     * Resets shared data after partitioning is done.
-     */
-    void reset() {
-        classifier.reset();
-        std::fill_n(bucket_start, Cfg::kMaxBuckets + 1, 0);
-        overflow = nullptr;
-        scheduler.reset();
-    }
-};
-#endif // _REENTRANT
 
 }  // namespace detail
 }  // namespace ips4o

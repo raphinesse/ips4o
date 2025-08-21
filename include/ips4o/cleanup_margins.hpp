@@ -49,39 +49,6 @@ namespace detail {
 /**
  * Saves margins at thread boundaries.
  */
-#ifdef _REENTRANT
-template <class Cfg>
-std::pair<int, typename Cfg::difference_type> Sorter<Cfg>::saveMargins(int last_bucket) {
-    // Find last bucket boundary in this thread's area
-    diff_t tail = bucket_start_[last_bucket];
-    const diff_t end = Cfg::alignToNextBlock(tail);
-
-    // Don't need to do anything if there is no overlap, or we are in the overflow case
-    if (tail == end || end > (end_ - begin_))
-        return {-1, 0};
-
-    // Find bucket this last block belongs to
-    {
-        const auto start_of_last_block = end - Cfg::kBlockSize;
-        diff_t last_start;
-        do {
-            --last_bucket;
-            last_start = bucket_start_[last_bucket];
-        } while (last_start > start_of_last_block);
-    }
-
-    // Check if the last block has been written
-    const auto write = shared_->bucket_pointers[last_bucket].getWrite();
-    if (write < end)
-        return {-1, 0};
-
-    // Read excess elements, if necessary
-    tail = bucket_start_[last_bucket + 1];
-    local_.swap[0].readFrom(begin_ + tail, end - tail);
-
-    return {last_bucket, end - tail};
-}
-#endif // _REENTRANT
 
 /**
  * Fills margins from buffers.

@@ -146,9 +146,6 @@ std::pair<int, bool> Sorter<Cfg>::partition(const iterator begin, const iterator
 
         // Save excess elements at right end of stripe
         auto in_swap_buffer =  std::pair<int, diff_t>(-1, 0);
-#ifdef _REENTRANT
-        if constexpr (!kIsParallel) in_swap_buffer = saveMargins(my_last_bucket);
-#endif // _REENTRANT
         if constexpr (kIsParallel) shared_->sync.barrier();
 
         // Write remaining elements

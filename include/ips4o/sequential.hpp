@@ -46,50 +46,6 @@
 namespace ips4o {
 namespace detail {
 
-#if defined(_REENTRANT)
-
-/**
- * Recursive entry point for sequential algorithm.
- */
-template <class Cfg>
-void Sorter<Cfg>::sequential(const iterator begin, const Task& task,
-                             PrivateQueue<Task>& queue) {
-    // Check for base case
-    const auto n = task.end - task.begin;
-    IPS4OML_IS_NOT(n <= 2 * Cfg::kBaseCaseSize);
-
-    diff_t bucket_start[Cfg::kMaxBuckets + 1];
-
-    // Do the partitioning
-    const auto res =
-            partition<false>(begin + task.begin, begin + task.end, bucket_start, 0, 1);
-    const int num_buckets = std::get<0>(res);
-    const bool equal_buckets = std::get<1>(res);
-
-    // Final base case is executed in cleanup step, so we're done here
-    if (n <= Cfg::kSingleLevelThreshold) {
-        return;
-    }
-
-    // Recurse
-    if (equal_buckets) {
-        const auto start = bucket_start[num_buckets - 1];
-        const auto stop = bucket_start[num_buckets];
-        if (stop - start > 2 * Cfg::kBaseCaseSize) {
-            queue.emplace(task.begin + start, task.begin + stop);
-        }
-    }
-    for (int i = num_buckets - 1 - equal_buckets; i >= 0; i -= 1 + equal_buckets) {
-        const auto start = bucket_start[i];
-        const auto stop = bucket_start[i + 1];
-        if (stop - start > 2 * Cfg::kBaseCaseSize) {
-            queue.emplace(task.begin + start, task.begin + stop);
-        }
-    }
-}
-
-#endif  // _REENTRANT
-
 /**
  * Recursive entry point for sequential algorithm.
  */
