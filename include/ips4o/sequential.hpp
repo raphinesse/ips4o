@@ -129,7 +129,6 @@ class SequentialSorter {
  public:
     explicit SequentialSorter(bool check_sorted, typename Cfg::less comp)
         : check_sorted_(check_sorted)
-        , buffer_storage_(1)
         , local_ptr_(Cfg::kDataAlignment, std::move(comp), buffer_storage_.get()) {}
 
     explicit SequentialSorter(bool check_sorted, typename Cfg::less comp,

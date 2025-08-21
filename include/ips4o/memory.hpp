@@ -146,15 +146,11 @@ class AlignedPtr<void> {
 template <class Cfg>
 class Sorter<Cfg>::BufferStorage : public AlignedPtr<void> {
  public:
-    static constexpr const auto kPerThread =
+    static constexpr const auto kBufferSize =
             Cfg::kBlockSizeInBytes * Cfg::kMaxBuckets * (1 + Cfg::kAllowEqualBuckets);
 
-    BufferStorage() {}
-
-    explicit BufferStorage(int num_threads)
-        : AlignedPtr<void>(Cfg::kDataAlignment, num_threads * kPerThread) {}
-
-    char* forThread(int id) { return this->get() + id * kPerThread; }
+    BufferStorage()
+        : AlignedPtr<void>(Cfg::kDataAlignment, kBufferSize) {}
 };
 
 /**
