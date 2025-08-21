@@ -41,7 +41,6 @@
 #include "base_case.hpp"
 #include "memory.hpp"
 #include "partitioning.hpp"
-#include "scheduler.hpp"
 
 namespace ips4o {
 namespace detail {

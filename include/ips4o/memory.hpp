@@ -50,7 +50,6 @@
 #include "buffers.hpp"
 #include "classifier.hpp"
 #include "config.hpp"
-#include "scheduler.hpp"
 
 namespace ips4o {
 namespace detail {
@@ -170,8 +169,6 @@ struct Sorter<Cfg>::LocalData {
     Block swap[2];
     Block overflow;
 
-    PrivateQueue<Task> seq_task_queue;
-
     // Bucket information
     BucketPointers bucket_pointers[Cfg::kMaxBuckets];
 
@@ -205,22 +202,6 @@ struct Sorter<Cfg>::LocalData {
         classifier.reset();
         std::fill_n(bucket_size, Cfg::kMaxBuckets, 0);
     }
-};
-
-/**
- * Data describing a parallel task and the corresponding threads.
- */
-struct BigTask {
-    BigTask() : has_task{false} {}
-    // TODO or Cfg::iterator???
-    std::ptrdiff_t begin;
-    std::ptrdiff_t end;
-    // My thread id of this task.
-    int task_thread_id;
-    // Index of the thread owning the thread pool used by this task.
-    int root_thread;
-    // Indicates whether this is a task or not
-    bool has_task;
 };
 
 }  // namespace detail

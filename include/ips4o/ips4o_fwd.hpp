@@ -41,8 +41,6 @@
 #include <vector>
 
 #include "config.hpp"
-#include "scheduler.hpp"
-#include "task.hpp"
 
 namespace ips4o {
 
@@ -81,8 +79,6 @@ class Sorter {
 
     void sequential(iterator begin, iterator end);
 
-    void sequential(const iterator begin, const Task& task, PrivateQueue<Task>& queue);
-
     void sequential_rec(iterator begin, iterator end);
 
  private:
@@ -101,8 +97,6 @@ class Sorter {
     int num_buckets_;
     int my_id_;
     int num_threads_;
-
-    static inline int computeLogBuckets(diff_t n);
 
     std::pair<int, bool> buildClassifier(iterator begin, iterator end,
                                          Classifier& classifier);
@@ -134,21 +128,6 @@ class Sorter {
     template <bool kIsParallel>
     std::pair<int, bool> partition(iterator begin, iterator end, diff_t* bucket_start,
                                    int my_id, int num_threads);
-
-    void processSmallTasks(iterator begin);
-
-    void processBigTasks(const iterator begin, const diff_t stripe, const int my_id,
-                         BufferStorage& buffer_storage,
-                         std::vector<std::shared_ptr<SubThreadPool>>& tp_trash);
-
-    void processBigTaskPrimary(const iterator begin, const diff_t stripe, const int my_id,
-                               BufferStorage& buffer_storage,
-                               std::vector<std::shared_ptr<SubThreadPool>>& tp_trash);
-    void processBigTasksSecondary(const int my_id);
-
-    void queueTasks(const diff_t stripe, const int id, const int num_threads,
-                    const diff_t parent_task_size, const diff_t offset,
-                    const diff_t* bucket_start, int num_buckets, bool equal_buckets);
 };
 
 }  // namespace detail

@@ -78,23 +78,6 @@ inline void baseCaseSort(It begin, It end, Comp&& comp) {
     detail::insertionSort(std::move(begin), std::move(end), std::forward<Comp>(comp));
 }
 
-template <class It, class Comp, class ThreadPool>
-inline bool isSorted(It begin, It end, Comp&& comp, ThreadPool& thread_pool) {
-    // Do nothing if input is already sorted.
-    std::vector<bool> is_sorted(thread_pool.numThreads());
-    thread_pool(
-            [begin, end, &is_sorted, &comp](int my_id, int num_threads) {
-                const auto size = end - begin;
-                const auto stripe = (size + num_threads - 1) / num_threads;
-                const auto my_begin = begin + std::min(stripe * my_id, size);
-                const auto my_end = begin + std::min(stripe * (my_id + 1) + 1, size);
-                is_sorted[my_id] = std::is_sorted(my_begin, my_end, comp);
-            },
-            thread_pool.numThreads());
-
-    return std::all_of(is_sorted.begin(), is_sorted.end(), [](bool res) { return res; });
-}
-
 template <class It, class Comp>
 inline bool sortSimpleCases(It begin, It end, Comp&& comp) {
     if (begin == end) {

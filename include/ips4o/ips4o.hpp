@@ -43,7 +43,6 @@
 #include "base_case.hpp"
 #include "config.hpp"
 #include "memory.hpp"
-#include "parallel.hpp"
 #include "sequential.hpp"
 
 namespace ips4o {
