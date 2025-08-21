@@ -223,28 +223,6 @@ struct ExtendedConfig : public Cfg {
     };
 
     /**
-     * Dummy thread pool.
-     */
-    class SubThreadPool {
-     public:
-        explicit SubThreadPool(int) {}
-
-        void join(int) {}
-
-        void release_threads() {}
-
-        template <class F>
-        void operator()(F&&, int) {}
-
-        Sync& sync() { return sync_; }
-
-        int numThreads() const { return 1; }
-
-     private:
-        Sync sync_;
-    };
-
-    /**
      * Maximum number of buckets (including equality buckets).
      */
     static constexpr const int kMaxBuckets =

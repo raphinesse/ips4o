@@ -67,14 +67,12 @@ class Sorter {
     using iterator = typename Cfg::iterator;
     using diff_t = typename Cfg::difference_type;
     using value_type = typename Cfg::value_type;
-    using SubThreadPool = typename Cfg::SubThreadPool;
 
     class BufferStorage;
     class Block;
     class Buffers;
     class BucketPointers;
     struct LocalData;
-    struct SharedData;
     explicit Sorter(LocalData& local) : local_(local) {}
 
     void sequential(iterator begin, iterator end);
@@ -85,7 +83,6 @@ class Sorter {
     using Classifier = ::ips4o::detail::Classifier<Cfg>;
 
     LocalData& local_;
-    SharedData* shared_;
     Classifier* classifier_;
 
     diff_t* bucket_start_;
@@ -106,8 +103,6 @@ class Sorter {
 
     inline void sequentialClassification(bool use_equal_buckets);
 
-    void moveEmptyBlocks(diff_t my_begin, diff_t my_end, diff_t my_first_empty_block);
-
     inline int computeOverflowBucket();
 
     template <bool kEqualBuckets>
@@ -127,9 +122,6 @@ class Sorter {
 };
 
 }  // namespace detail
-
-template <class Cfg>
-class ParallelSorter;
 
 template <class It, class Comp>
 inline void sort(It begin, It end, Comp comp);

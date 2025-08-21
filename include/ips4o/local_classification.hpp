@@ -37,7 +37,6 @@
 
 #include "ips4o_fwd.hpp"
 #include "classifier.hpp"
-#include "empty_block_movement.hpp"
 #include "memory.hpp"
 
 namespace ips4o {
