@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include "cassert"
+#include <cassert>
 
 #ifdef NDEBUG
 #define IPS4OML_ASSUME_NOT(c) if (c) __builtin_unreachable()
