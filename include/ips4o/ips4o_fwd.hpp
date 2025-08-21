@@ -112,7 +112,7 @@ class Sorter {
     template <bool kEqualBuckets>
     void permuteBlocks();
 
-    void writeMargins(int overflow_bucket, int swap_bucket, diff_t in_swap_buffer);
+    void writeMargins(int overflow_bucket);
 
     std::pair<int, bool> partition(iterator begin, iterator end, diff_t* bucket_start);
 };

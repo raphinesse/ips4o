@@ -102,15 +102,8 @@ std::pair<int, bool> Sorter<Cfg>::partition(const iterator begin, const iterator
     g_cleanup.start();
 #endif
 
-    // Cleanup
-    {
-        // Save excess elements at right end of stripe
-        auto in_swap_buffer =  std::pair<int, diff_t>(-1, 0);
-
-        // Write remaining elements
-        writeMargins(overflow_bucket,
-                     in_swap_buffer.first, in_swap_buffer.second);
-    }
+    // Write remaining elements
+    writeMargins(overflow_bucket);
 
     local_.reset();
 

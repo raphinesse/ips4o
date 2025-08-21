@@ -54,8 +54,7 @@ namespace detail {
  * Fills margins from buffers.
  */
 template <class Cfg>
-void Sorter<Cfg>::writeMargins(const int overflow_bucket, const int swap_bucket,
-                               const diff_t in_swap_buffer) {
+void Sorter<Cfg>::writeMargins(const int overflow_bucket) {
     const bool is_last_level = end_ - begin_ <= Cfg::kSingleLevelThreshold;
     const auto comp = classifier_->getComparator();
 
@@ -91,19 +90,6 @@ void Sorter<Cfg>::writeMargins(const int overflow_bucket, const int swap_bucket,
             dst = std::move(src, src + tail_size, dst);
 
             overflow_->reset(Cfg::kBlockSize);
-        } else if (i == swap_bucket && in_swap_buffer) {
-            // Did we save this in saveMargins?
-
-            // Bucket of last block in this thread's area => write swap buffer
-            auto src = local_.swap[0].data();
-            // All elements from the buffer must fit
-            IPS4OML_ASSUME_NOT(in_swap_buffer > remaining);
-
-            // Write to head
-            dst = std::move(src, src + in_swap_buffer, dst);
-            remaining -= in_swap_buffer;
-
-            local_.swap[0].reset(in_swap_buffer);
         } else if (bwrite > bend && bend - bstart > Cfg::kBlockSize) {
             // Final block has been written => move excess elements to head
             IPS4OML_ASSUME_NOT(Cfg::alignToNextBlock(bend) != bwrite);
