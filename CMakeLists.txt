@@ -35,31 +35,5 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   endif()
 endif()
 
-option(IPS4O_DISABLE_PARALLEL "Disable parallel code of IPS4o" OFF)
-if (NOT IPS4O_DISABLE_PARALLEL)
-
-  set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-  set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-  find_package (Threads REQUIRED)
-  target_link_libraries(ips4o INTERFACE Threads::Threads)
-
-  find_package(TBB REQUIRED)
-  target_link_libraries(ips4o INTERFACE TBB::tbb)
-
-  target_link_libraries(ips4o INTERFACE atomic)
-  
-endif()
-message(STATUS "Parallel support of IPS4o disabled: ${IPS4O_DISABLE_PARALLEL}")
-
-option(IPS4O_USE_OPENMP "Enable OpenMP threads" OFF)
-if (IPS4O_USE_OPENMP)
-  if (NOT IPS4O_DISABLE_PARALLEL)
-    find_package(OpenMP)
-    if(OpenMP_CXX_FOUND)
-      target_link_libraries(ips4o INTERFACE OpenMP::OpenMP_CXX)
-    endif()
-  endif()
-endif()
-
 add_executable(ips4o_example src/example.cpp)
 target_link_libraries(ips4o_example PRIVATE ips4o)
