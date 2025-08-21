@@ -108,7 +108,7 @@ std::pair<int, bool> Sorter<Cfg>::partition(const iterator begin, const iterator
         auto in_swap_buffer =  std::pair<int, diff_t>(-1, 0);
 
         // Write remaining elements
-        writeMargins(0, num_buckets_, overflow_bucket,
+        writeMargins(overflow_bucket,
                      in_swap_buffer.first, in_swap_buffer.second);
     }
 

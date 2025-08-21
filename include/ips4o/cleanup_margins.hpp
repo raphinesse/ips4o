@@ -54,13 +54,13 @@ namespace detail {
  * Fills margins from buffers.
  */
 template <class Cfg>
-void Sorter<Cfg>::writeMargins(const int first_bucket, const int last_bucket,
-                               const int overflow_bucket, const int swap_bucket,
+void Sorter<Cfg>::writeMargins(const int overflow_bucket, const int swap_bucket,
                                const diff_t in_swap_buffer) {
     const bool is_last_level = end_ - begin_ <= Cfg::kSingleLevelThreshold;
     const auto comp = classifier_->getComparator();
 
-    for (int i = first_bucket; i < last_bucket; ++i) {
+    const int num_buckets = num_buckets_;
+    for (int i = 0; i < num_buckets; ++i) {
         // Get bucket information
         const auto bstart = bucket_start_[i];
         const auto bend = bucket_start_[i + 1];
