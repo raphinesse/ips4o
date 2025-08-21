@@ -83,7 +83,7 @@ void Sorter<Cfg>::sequential_rec(const iterator begin, const iterator end) {
     diff_t bucket_start[Cfg::kMaxBuckets + 1];
 
     // Do the partitioning
-    const auto res = partition<false>(begin, end, bucket_start, 0, 1);
+    const auto res = partition(begin, end, bucket_start, 0, 1);
     const int num_buckets = std::get<0>(res);
     const bool equal_buckets = std::get<1>(res);
 

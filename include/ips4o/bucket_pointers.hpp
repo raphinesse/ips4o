@@ -74,29 +74,16 @@ class Sorter<Cfg>::BucketPointers {
 
         inline diff_t getLeastSignificant() const { return single_.l_; }
 
-        template <bool kAtomic>
         inline std::pair<diff_t, diff_t> fetchSubMostSignificant(diff_t m) {
-            if (kAtomic) {
-                const atomic_type atom_m = static_cast<atomic_type>(m) << kShift;
-                const auto p = __atomic_fetch_sub(&all_, atom_m, __ATOMIC_RELAXED);
-                return {p & kMask, p >> kShift};
-            } else {
-                const auto tmp = single_.m_;
-                single_.m_ -= m;
-                return {single_.l_, tmp};
-            }
+            const auto tmp = single_.m_;
+            single_.m_ -= m;
+            return {single_.l_, tmp};
         }
 
-        template <bool kAtomic>
         inline std::pair<diff_t, diff_t> fetchAddLeastSignificant(diff_t l) {
-            if (kAtomic) {
-                const auto p = __atomic_fetch_add(&all_, l, __ATOMIC_RELAXED);
-                return {p & kMask, p >> kShift};
-            } else {
-                const auto tmp = single_.l_;
-                single_.l_ += l;
-                return {tmp, single_.m_};
-            }
+            const auto tmp = single_.l_;
+            single_.l_ += l;
+            return {tmp, single_.m_};
         }
 
      private:
@@ -178,27 +165,16 @@ class Sorter<Cfg>::BucketPointers {
     /**
      * Gets write/read pointers and increases the write pointer.
      */
-    template <bool kAtomic>
     std::pair<diff_t, diff_t> incWrite() {
-        return ptr_.template fetchAddLeastSignificant<kAtomic>(Cfg::kBlockSize);
+        return ptr_.fetchAddLeastSignificant(Cfg::kBlockSize);
     }
 
     /**
      * Gets write/read pointers, decreases the read pointer, and increases the read
      * counter.
      */
-    template <bool kAtomic>
     std::pair<diff_t, diff_t> decRead() {
-        if (kAtomic) {
-            // Must not be moved after the following fetch_sub, as that could lead to
-            // another thread writing to our block, because isReading() returns false.
-            num_reading_.fetch_add(1, std::memory_order_acquire);
-            const auto p =
-                    ptr_.template fetchSubMostSignificant<kAtomic>(Cfg::kBlockSize);
-            return {p.first, p.second & ~(Cfg::kBlockSize - 1)};
-        } else {
-            return ptr_.template fetchSubMostSignificant<kAtomic>(Cfg::kBlockSize);
-        }
+        return ptr_.fetchSubMostSignificant(Cfg::kBlockSize);
     }
 
     /**

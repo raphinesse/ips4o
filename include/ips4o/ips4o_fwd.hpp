@@ -104,28 +104,24 @@ class Sorter {
     template <bool kEqualBuckets>
     __attribute__((flatten)) diff_t classifyLocally(iterator my_begin, iterator my_end);
 
-    inline void parallelClassification(bool use_equal_buckets);
-
     inline void sequentialClassification(bool use_equal_buckets);
 
     void moveEmptyBlocks(diff_t my_begin, diff_t my_end, diff_t my_first_empty_block);
 
     inline int computeOverflowBucket();
 
-    template <bool kEqualBuckets, bool kIsParallel>
+    template <bool kEqualBuckets>
     inline int classifyAndReadBlock(int read_bucket);
 
-    template <bool kEqualBuckets, bool kIsParallel>
+    template <bool kEqualBuckets>
     inline int swapBlock(diff_t max_off, int dest_bucket, bool current_swap);
 
-    template <bool kEqualBuckets, bool kIsParallel>
+    template <bool kEqualBuckets>
     void permuteBlocks();
 
-    template <bool kIsParallel>
     void writeMargins(int first_bucket, int last_bucket, int overflow_bucket,
                       int swap_bucket, diff_t in_swap_buffer);
 
-    template <bool kIsParallel>
     std::pair<int, bool> partition(iterator begin, iterator end, diff_t* bucket_start,
                                    int my_id, int num_threads);
 };

@@ -103,64 +103,6 @@ void Sorter<Cfg>::sequentialClassification(const bool use_equal_buckets) {
     }
 }
 
-/**
- * Local classification in the parallel case.
- */
-template <class Cfg>
-void Sorter<Cfg>::parallelClassification(const bool use_equal_buckets) {
-    // Compute stripe for each thread
-    const auto elements_per_thread = static_cast<double>(end_ - begin_) / num_threads_;
-    const auto my_begin =
-            begin_ + Cfg::alignToNextBlock(my_id_ * elements_per_thread + 0.5);
-    const auto my_end = [&] {
-        const auto size = end_ - begin_;
-        const auto e = Cfg::alignToNextBlock((my_id_ + 1) * elements_per_thread + 0.5);
-        if (size < e) {
-          return end_;
-        }
-        return begin_ + e;
-    }();
-
-    local_.first_block = my_begin - begin_;
-
-    // Do classification
-    if (my_begin >= my_end) {
-        // Small input (less than two blocks per thread), wait for other threads to finish
-        local_.first_empty_block = my_begin - begin_;
-        shared_->sync.barrier();
-        shared_->sync.barrier();
-    } else {
-        const auto my_first_empty_block =
-                use_equal_buckets ? classifyLocally<true>(my_begin, my_end)
-                                  : classifyLocally<false>(my_begin, my_end);
-
-        // Find bucket boundaries
-        diff_t sum = 0;
-        for (int i = 0, end = num_buckets_; i < end; ++i) {
-            sum += local_.bucket_size[i];
-            __atomic_fetch_add(&bucket_start_[i + 1], sum, __ATOMIC_RELAXED);
-        }
-
-        local_.first_empty_block = my_first_empty_block;
-
-        shared_->sync.barrier();
-
-#ifdef IPS4O_TIMER
-        g_classification.stop();
-        g_empty_block.start();
-#endif
-
-        // Move empty blocks and set bucket write/read pointers
-        moveEmptyBlocks(my_begin - begin_, my_end - begin_, my_first_empty_block);
-
-        shared_->sync.barrier();
-
-#ifdef IPS4O_TIMER
-        g_empty_block.stop();
-        g_classification.start();
-#endif
-    }
-}
 
 }  // namespace detail
 }  // namespace ips4o

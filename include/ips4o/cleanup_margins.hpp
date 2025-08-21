@@ -54,7 +54,6 @@ namespace detail {
  * Fills margins from buffers.
  */
 template <class Cfg>
-template <bool kIsParallel>
 void Sorter<Cfg>::writeMargins(const int first_bucket, const int last_bucket,
                                const int overflow_bucket, const int swap_bucket,
                                const diff_t in_swap_buffer) {
@@ -120,36 +119,28 @@ void Sorter<Cfg>::writeMargins(const int first_bucket, const int last_bucket,
         }
 
         // Write elements from buffers
-        for (int t = 0; t < num_threads_; ++t) {
-            decltype(local_.buffers)*buffers_ptr = nullptr;
-            if constexpr (kIsParallel) {
-                buffers_ptr = &shared_->local[t]->buffers;
-            } else {
-                buffers_ptr = &local_.buffers;
-            }
-            auto& buffers = *buffers_ptr;
-            auto src = buffers.data(i);
-            auto count = buffers.size(i);
+        auto& buffers = local_.buffers;
+        auto src = buffers.data(i);
+        auto count = buffers.size(i);
 
-            if (count <= remaining) {
-                dst = std::move(src, src + count, dst);
-                remaining -= count;
-            } else {
-                std::move(src, src + remaining, dst);
-                src += remaining;
-                count -= remaining;
-                remaining = std::numeric_limits<diff_t>::max();
+        if (count <= remaining) {
+            dst = std::move(src, src + count, dst);
+            remaining -= count;
+        } else {
+            std::move(src, src + remaining, dst);
+            src += remaining;
+            count -= remaining;
+            remaining = std::numeric_limits<diff_t>::max();
 
-                dst = begin_ + bwrite;
-                dst = std::move(src, src + count, dst);
-            }
-
-            buffers.reset(i);
+            dst = begin_ + bwrite;
+            dst = std::move(src, src + count, dst);
         }
+
+        buffers.reset(i);
 
         // Perform final base case sort here, while the data is still cached
         if (is_last_level
-            || ((bend - bstart <= 2 * Cfg::kBaseCaseSize) && !kIsParallel)) {
+            || (bend - bstart <= 2 * Cfg::kBaseCaseSize)) {
 #ifdef IPS4O_TIMER
             g_cleanup.stop();
             g_base_case.start();

@@ -61,22 +61,20 @@ int Sorter<Cfg>::computeOverflowBucket() {
  * Tries to read a block from read_bucket.
  */
 template <class Cfg>
-template <bool kEqualBuckets, bool kIsParallel>
+template <bool kEqualBuckets>
 int Sorter<Cfg>::classifyAndReadBlock(const int read_bucket) {
     auto& bp = bucket_pointers_[read_bucket];
 
     diff_t write, read;
-    std::tie(write, read) = bp.template decRead<kIsParallel>();
+    std::tie(write, read) = bp.decRead();
 
     if (read < write) {
         // No more blocks in this bucket
-        if (kIsParallel) bp.stopRead();
         return -1;
     }
 
     // Read block
     local_.swap[0].readFrom(begin_ + read);
-    if (kIsParallel) bp.stopRead();
 
     return classifier_->template classify<kEqualBuckets>(local_.swap[0].head());
 }
@@ -85,14 +83,14 @@ int Sorter<Cfg>::classifyAndReadBlock(const int read_bucket) {
  * Finds a slot for the block in the swap buffer. May or may not read another block.
  */
 template <class Cfg>
-template <bool kEqualBuckets, bool kIsParallel>
+template <bool kEqualBuckets>
 int Sorter<Cfg>::swapBlock(const diff_t max_off, const int dest_bucket,
                            const bool current_swap) {
     diff_t write, read;
     int new_dest_bucket;
     auto& bp = bucket_pointers_[dest_bucket];
     do {
-        std::tie(write, read) = bp.template incWrite<kIsParallel>();
+        std::tie(write, read) = bp.incWrite();
         if (write > read) {
             // Destination block is empty
             if (write >= max_off) {
@@ -101,8 +99,6 @@ int Sorter<Cfg>::swapBlock(const diff_t max_off, const int dest_bucket,
                 overflow_ = &local_.overflow;
                 return -1;
             }
-            // Make sure no one is currently reading this block
-            while (kIsParallel && bp.isReading()) {}
             // Write block
             local_.swap[current_swap].writeTo(begin_ + write);
             return -1;
@@ -122,7 +118,7 @@ int Sorter<Cfg>::swapBlock(const diff_t max_off, const int dest_bucket,
  * Block permutation phase.
  */
 template <class Cfg>
-template <bool kEqualBuckets, bool kIsParallel>
+template <bool kEqualBuckets>
 void Sorter<Cfg>::permuteBlocks() {
     const auto num_buckets = num_buckets_;
     // Distribute starting points of threads
@@ -135,11 +131,11 @@ void Sorter<Cfg>::permuteBlocks() {
         int dest_bucket;
         // Try to read a block ...
         while ((dest_bucket =
-                        classifyAndReadBlock<kEqualBuckets, kIsParallel>(read_bucket))
+                        classifyAndReadBlock<kEqualBuckets>(read_bucket))
                != -1) {
             bool current_swap = 0;
             // ... then write it to the correct bucket
-            while ((dest_bucket = swapBlock<kEqualBuckets, kIsParallel>(
+            while ((dest_bucket = swapBlock<kEqualBuckets>(
                             max_off, dest_bucket, current_swap))
                    != -1) {
                 // Read another block, keep going
