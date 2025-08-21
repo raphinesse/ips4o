@@ -55,8 +55,7 @@ namespace detail {
  */
 template <class Cfg>
 std::pair<int, bool> Sorter<Cfg>::partition(const iterator begin, const iterator end,
-                                            diff_t* const bucket_start, const int my_id,
-                                            const int num_threads) {
+                                            diff_t* const bucket_start) {
 #ifdef IPS4O_TIMER
     g_overhead.stop();
     g_sampling.start();
@@ -75,8 +74,6 @@ std::pair<int, bool> Sorter<Cfg>::partition(const iterator begin, const iterator
     this->overflow_ = nullptr;
     this->begin_ = begin;
     this->end_ = end;
-    this->my_id_ = my_id;
-    this->num_threads_ = num_threads;
 
 #ifdef IPS4O_TIMER
     g_sampling.stop();
@@ -107,19 +104,11 @@ std::pair<int, bool> Sorter<Cfg>::partition(const iterator begin, const iterator
 
     // Cleanup
     {
-        // Distribute buckets among threads
-        const int num_buckets = num_buckets_;
-        const int buckets_per_thread = (num_buckets + num_threads_ - 1) / num_threads_;
-        int my_first_bucket = my_id_ * buckets_per_thread;
-        int my_last_bucket = (my_id_ + 1) * buckets_per_thread;
-        my_first_bucket = num_buckets < my_first_bucket ? num_buckets : my_first_bucket;
-        my_last_bucket = num_buckets < my_last_bucket ? num_buckets : my_last_bucket;
-
         // Save excess elements at right end of stripe
         auto in_swap_buffer =  std::pair<int, diff_t>(-1, 0);
 
         // Write remaining elements
-        writeMargins(my_first_bucket, my_last_bucket, overflow_bucket,
+        writeMargins(0, num_buckets_, overflow_bucket,
                      in_swap_buffer.first, in_swap_buffer.second);
     }
 

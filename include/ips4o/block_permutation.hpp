@@ -121,8 +121,7 @@ template <class Cfg>
 template <bool kEqualBuckets>
 void Sorter<Cfg>::permuteBlocks() {
     const auto num_buckets = num_buckets_;
-    // Distribute starting points of threads
-    int read_bucket = (my_id_ * num_buckets / num_threads_) % num_buckets;
+    int read_bucket = 0;
     // Not allowed to write to this offset, to avoid overflow
     const diff_t max_off = Cfg::alignToNextBlock(end_ - begin_ + 1) - Cfg::kBlockSize;
 

@@ -92,8 +92,6 @@ class Sorter {
     iterator begin_;
     iterator end_;
     int num_buckets_;
-    int my_id_;
-    int num_threads_;
 
     std::pair<int, bool> buildClassifier(iterator begin, iterator end,
                                          Classifier& classifier);
@@ -117,8 +115,7 @@ class Sorter {
     void writeMargins(int first_bucket, int last_bucket, int overflow_bucket,
                       int swap_bucket, diff_t in_swap_buffer);
 
-    std::pair<int, bool> partition(iterator begin, iterator end, diff_t* bucket_start,
-                                   int my_id, int num_threads);
+    std::pair<int, bool> partition(iterator begin, iterator end, diff_t* bucket_start);
 };
 
 }  // namespace detail
