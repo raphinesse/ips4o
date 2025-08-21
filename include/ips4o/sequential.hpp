@@ -129,12 +129,7 @@ class SequentialSorter {
  public:
     explicit SequentialSorter(bool check_sorted, typename Cfg::less comp)
         : check_sorted_(check_sorted)
-        , local_ptr_(Cfg::kDataAlignment, std::move(comp), buffer_storage_.get()) {}
-
-    explicit SequentialSorter(bool check_sorted, typename Cfg::less comp,
-                              char* buffer_storage)
-        : check_sorted_(check_sorted)
-        , local_ptr_(Cfg::kDataAlignment, std::move(comp), buffer_storage) {}
+        , local_ptr_(Cfg::kDataAlignment, std::move(comp)) {}
 
     void operator()(iterator begin, iterator end) {
         if (check_sorted_) {
@@ -148,7 +143,6 @@ class SequentialSorter {
 
  private:
     const bool check_sorted_;
-    typename Sorter::BufferStorage buffer_storage_;
     detail::AlignedPtr<typename Sorter::LocalData> local_ptr_;
 };
 

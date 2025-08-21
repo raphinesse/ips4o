@@ -161,6 +161,7 @@ struct Sorter<Cfg>::LocalData {
     using diff_t = typename Cfg::difference_type;
     // Buffers
     diff_t bucket_size[Cfg::kMaxBuckets];
+    BufferStorage buffer_storage_;
     Buffers buffers;
     Block swap[2];
     Block overflow;
@@ -182,8 +183,8 @@ struct Sorter<Cfg>::LocalData {
             Cfg::kIs64Bit ? 1442695040888963407u : 1013904223u, 0u>
             random_generator;
 
-    LocalData(typename Cfg::less comp, char* buffer_storage)
-        : buffers(buffer_storage), classifier(std::move(comp)) {
+    LocalData(typename Cfg::less comp)
+        : buffers(buffer_storage_.get()), classifier(std::move(comp)) {
         std::random_device rdev;
         std::ptrdiff_t seed = rdev();
         if (Cfg::kIs64Bit) seed = (seed << (Cfg::kIs64Bit * 32)) | rdev();
